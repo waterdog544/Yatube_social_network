@@ -1,0 +1,16 @@
+{% extends 'base.html'%}
+{% load static %}
+{% block title %}
+  {{ author_title }}
+{% endblock %}   
+{% block content %}
+  <div class="container py-5">     
+	<h1>{{ author_head }}</h1>
+	<p>{{ author_text }}</p>
+	<p href="https://github.com/waterdog544/" target="_blank" class="btn btn-link">
+    Аккаунт в Github: https://github.com/waterdog544
+  </p>
+  <p>
+    <img src={% static 'img/waggon.jpg' %}>
+  </p>
+{% endblock %}
