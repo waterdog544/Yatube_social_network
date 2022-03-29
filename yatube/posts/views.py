@@ -1,4 +1,3 @@
-from ast import Not
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
@@ -149,12 +148,12 @@ def follow_index(request):
 
 @login_required
 def profile_follow(request, username):
-    a = request.user.username != username
-    b = Not (Follow.objects.get(
-        user=request.user,
+    no_follow_yourself = request.user.username != username
+    follow_exist = Follow.objects.filter(user=request.user).filter(
         author=User.objects.get(username=username)
-        ).exists())
-    if a and b:
+    ).exists()
+    follow_not_exist = not(follow_exist)
+    if no_follow_yourself and follow_not_exist:
         Follow.objects.create(
             user=request.user,
             author=User.objects.get(username=username)
