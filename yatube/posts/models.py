@@ -33,7 +33,10 @@ class Post(models.Model):
         verbose_name='Текст поста',
         help_text='Текст нового поста'
     )
-    pub_date = models.DateTimeField(auto_now_add=True)
+    pub_date = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Дата',
+        help_text='Дата создания поста')
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -51,10 +54,10 @@ class Post(models.Model):
         help_text='Группа, к которой будет относиться пост'
     )
     image = models.ImageField(
-        verbose_name='Картинка',
         upload_to='posts/',
         blank=True,
         null=True,
+        verbose_name='Картинка',
         help_text='Загрузите картинку'
     )
 
@@ -70,7 +73,10 @@ class Comment(models.Model):
         verbose_name='Текст комментария',
         help_text='Прокомментируйте пост',
     )
-    created = models.DateTimeField(auto_now_add=True)
+    created = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Дата',
+        help_text='Дата создания комментария')
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -107,3 +113,14 @@ class Follow(models.Model):
         verbose_name='Автор',
         help_text='Автор, на которого желаете подписаться'
     )
+
+    def __str__(self):
+        return f'{self.user} подписан на {self.author}'
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=('user', 'author'),
+                name='unique_pair'
+            ),
+        ]

@@ -8,7 +8,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
-from posts.models import Group, Post
+from posts.models import Comment, Group, Post
 
 TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
 
@@ -135,3 +135,42 @@ class PostCreateFormTests(TestCase):
             date.today().isocalendar()
         )
         self.assertEqual(post_edit.image, 'posts/small_new.gif')
+
+
+class CommentCreateFormTests(TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.user_author = User.objects.create_user(username='ioan')
+        cls.post = Post.objects.create(
+            author=cls.user_author,
+            text='Тестовый пост',
+        )
+
+    def setUp(self):
+        self.client = Client()
+        self.user_commentator = User.objects.create_user(username='pit')
+        self.client.force_login(self.user_commentator)
+
+    def test_create_comment(self):
+        form_data = {
+            'text': 'Tекст комментария',
+        }
+        self.client.post(
+            reverse(
+                'posts:add_comment',
+                kwargs={'post_id': CommentCreateFormTests.post.id}
+            ),
+            data=form_data,
+            follow=True
+        )
+        self.assertEqual(Comment.objects.count(), 1)
+        new_comment = Comment.objects.get(id=1)
+        self.assertEqual(new_comment.text, 'Tекст комментария')
+        self.assertEqual(new_comment.post.id, CommentCreateFormTests.post.id)
+        self.assertEqual(new_comment.author.username, 'pit')
+        self.assertEqual(
+            new_comment.created.isocalendar(),
+            date.today().isocalendar()
+        )

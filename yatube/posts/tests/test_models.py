@@ -1,11 +1,11 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
-from posts.models import Group, Post
+from posts.models import Comment, Follow, Group, Post
 
 User = get_user_model()
 
 
-class PostModelTestPost(TestCase):
+class ModelTestPost(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -16,14 +16,14 @@ class PostModelTestPost(TestCase):
         )
 
     def test_models_have_correct_object_name(self):
-        post = PostModelTestPost.post
+        post = ModelTestPost.post
         expected_post_name = post.text
         self.assertEqual(
             expected_post_name, str(post)
         )
 
     def test_label_post(self):
-        post = PostModelTestPost.post
+        post = ModelTestPost.post
         labels_list = {
             post._meta.get_field('text').verbose_name:
                 'Текст поста',
@@ -43,7 +43,7 @@ class PostModelTestPost(TestCase):
                 self.assertEqual(label, expected_label)
 
 
-class PostModelTestGroup(TestCase):
+class ModelTestGroup(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -55,14 +55,14 @@ class PostModelTestGroup(TestCase):
         )
 
     def test_models_have_correct_object_name(self):
-        group = PostModelTestGroup.group
+        group = ModelTestGroup.group
         expected_group_name = group.title
         self.assertEqual(
             expected_group_name, str(group)
         )
 
     def test_label_group(self):
-        group = PostModelTestGroup.group
+        group = ModelTestGroup.group
         labels_list = {
             group._meta.get_field('title').verbose_name:
                 'Название группы',
@@ -76,6 +76,87 @@ class PostModelTestGroup(TestCase):
                 'Описание группы',
             group._meta.get_field('description').help_text:
                 'Краткое описание группы'
+        }
+        for label, expected_label in labels_list.items():
+            with self.subTest(label=label):
+                self.assertEqual(label, expected_label)
+
+
+class ModelTestComment(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.user = User.objects.create_user(username='auth')
+        cls.post = Post.objects.create(
+            author=cls.user,
+            text='Тестовый пост',
+        )
+        cls.comment = Comment.objects.create(
+            author=cls.user,
+            text='Тестовый коментарий',
+            post=cls.post
+        )
+
+    def test_models_have_correct_object_name(self):
+        comment = ModelTestComment.comment
+        expected_comment_name = comment.text[:15]
+        self.assertEqual(
+            expected_comment_name, str(comment)
+        )
+
+    def test_label_post(self):
+        comment = ModelTestComment.comment
+        labels_list = {
+            comment._meta.get_field('text').verbose_name:
+                'Текст комментария',
+            comment._meta.get_field('text').help_text:
+                'Прокомментируйте пост',
+            comment._meta.get_field('author').verbose_name:
+                'Автор',
+            comment._meta.get_field('author').help_text:
+                'Автор комментария',
+            comment._meta.get_field('post').verbose_name:
+                'Пост',
+            comment._meta.get_field('post').help_text:
+                'Комментируемый пост',
+            comment._meta.get_field('created').verbose_name:
+                'Дата',
+            comment._meta.get_field('created').help_text:
+                'Дата создания комментария',
+        }
+        for label, expected_label in labels_list.items():
+            with self.subTest(label=label):
+                self.assertEqual(label, expected_label)
+
+
+class ModelTestFollow(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.user = User.objects.create_user(username='auth')
+        cls.author = User.objects.create_user(username='pit')
+        cls.follow = Follow.objects.create(user=cls.user, author=cls.author)
+
+    def test_models_have_correct_object_name(self):
+        follow = ModelTestFollow.follow
+        expected_comment_name = (f'{ModelTestFollow.user} подписан '
+                                 f'на {ModelTestFollow.author}'
+                                 )
+        self.assertEqual(
+            str(follow), expected_comment_name
+        )
+
+    def test_label_post(self):
+        follow = ModelTestFollow.follow
+        labels_list = {
+            follow._meta.get_field('author').verbose_name:
+                'Автор',
+            follow._meta.get_field('author').help_text:
+                'Автор, на которого желаете подписаться',
+            follow._meta.get_field('user').verbose_name:
+                'Пользователь',
+            follow._meta.get_field('user').help_text:
+                'Пользователь, желающий подписаться на автора',
         }
         for label, expected_label in labels_list.items():
             with self.subTest(label=label):

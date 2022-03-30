@@ -320,7 +320,7 @@ class CommentTest(TestCase):
         self.not_authorized_client = Client()
         self.authorized_client.force_login(CommentTest.user_author)
 
-    def test_comment_of_post_detail_authorized_client(self):
+    def test_add_comment_authorized_client(self):
         comment_data = {
             'text': 'Отличная мысль',
         }
@@ -345,6 +345,13 @@ class CommentTest(TestCase):
                 author=1,
             ).exists()
         )
+
+    def test_comment_of_post_detail_authorized_client(self):
+        Comment.objects.create(
+            text='Отличная мысль',
+            post_id=CommentTest.post.id,
+            author=CommentTest.user_author
+        )
         response = self.authorized_client.get(
             reverse(
                 'posts:post_detail',
@@ -356,6 +363,7 @@ class CommentTest(TestCase):
             comment_get_by_context.text,
             'Отличная мысль'
         )
+        self.assertEqual(comment_get_by_context.author.username, 'ioan')
 
     def test_comment_of_post_detail_not_authorized_client(self):
         comment_data = {
@@ -373,12 +381,7 @@ class CommentTest(TestCase):
             response,
             '/auth/login/?next=/posts/1/comment/'
         )
-        self.assertFalse(
-            Comment.objects.filter(
-                text='Отличная мысль',
-                author=1,
-            ).exists()
-        )
+        self.assertEqual(Comment.objects.count(), 0)
 
 
 class CacheTests(TestCase):
@@ -446,13 +449,24 @@ class FollowTests(TestCase):
         )
         self.authorized_client_unfollower.force_login(self.user_unfollower)
 
-    def test_subscribe(self):
+    def test_subscribe_create(self):
+        empty_subscribe = Follow.objects.filter(user=self.user).count()
+        self.assertEqual(empty_subscribe, 0)
+        self.authorized_client.get(
+            reverse(
+                'posts:profile_follow',
+                kwargs={'username': FollowTests.user_author}
+            )
+        )
+        add_subscribe = Follow.objects.filter(user=self.user).count()
+        self.assertEqual(add_subscribe, empty_subscribe + 1)
+
+    def test_subscribe_context(self):
         response = self.authorized_client.get(
             reverse('posts:follow_index')
         )
         empty_subscribe_response = len(response.context['page_obj'])
-        empty_subscribe_data = Follow.objects.filter(user=self.user).count()
-        self.assertEqual(empty_subscribe_response, empty_subscribe_data)
+        self.assertEqual(empty_subscribe_response, 0)
         response = self.authorized_client.get(
             reverse(
                 'posts:profile_follow',
@@ -463,9 +477,30 @@ class FollowTests(TestCase):
             reverse('posts:follow_index')
         )
         append_subscribe_response = len(response.context['page_obj'])
-        self.assertEqual(append_subscribe_response, empty_subscribe_data + 1)
+        self.assertEqual(append_subscribe_response, 1)
+        post = response.context['page_obj'][0]
+        post_attr = {
+            post.text: 'Тестовый пост',
+            post.author.username: 'ioan',
+            post.pub_date.isocalendar(): date.today().isocalendar(),
+        }
+        for attr_get, expected_attr in post_attr.items():
+            with self.subTest(attr_get=attr_get):
+                self.assertEqual(attr_get, expected_attr)
 
-    def test_unsubscribe(self):
+    def test_unsubscribe_delete(self):
+        Follow.objects.create(user=self.user, author=FollowTests.user_author)
+        subscribe = Follow.objects.filter(user=self.user).count()
+        self.authorized_client.get(
+            reverse(
+                'posts:profile_unfollow',
+                kwargs={'username': FollowTests.user_author}
+            )
+        )
+        empty_subscribe = Follow.objects.filter(user=self.user).count()
+        self.assertEqual(empty_subscribe, subscribe - 1)
+
+    def test_unsubscribe_context(self):
         Follow.objects.create(user=self.user, author=FollowTests.user_author)
         response = self.authorized_client.get(
             reverse('posts:follow_index')
@@ -482,8 +517,7 @@ class FollowTests(TestCase):
             reverse('posts:follow_index')
         )
         empty_subscribe_response = len(response.context['page_obj'])
-        empty_subscribe_data = Follow.objects.filter(user=self.user).count()
-        self.assertEqual(empty_subscribe_response, empty_subscribe_data)
+        self.assertEqual(empty_subscribe_response, subscribe_response - 1)
 
     def test_view_to_follower(self):
         Follow.objects.create(user=self.user, author=FollowTests.user_author)

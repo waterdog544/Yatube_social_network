@@ -48,6 +48,17 @@ class PostURLTests(TestCase):
             f'/posts/{PostURLTests.post.id}/edit/':
             f'/auth/login/?next=/posts/{PostURLTests.post.id}/edit/',
             '/create/': '/auth/login/?next=/create/',
+            f'/posts/{PostURLTests.post.id}/comment/':
+            f'/auth/login/?next=/posts/{PostURLTests.post.id}/comment/',
+            '/follow/': '/auth/login/?next=/follow/',
+            f'/profile/{PostURLTests.user_author.username}/follow/':
+            (f'/auth/login/?next=/profile/'
+             f'{PostURLTests.user_author.username}/follow/'
+             ),
+            f'/profile/{PostURLTests.user_author.username}/unfollow/':
+            (f'/auth/login/?next=/profile/'
+             f'{PostURLTests.user_author.username}/unfollow/'
+             ),
         }
         for address, redirect_address in status_pages_redirect.items():
             with self.subTest(address=address):
@@ -61,6 +72,7 @@ class PostURLTests(TestCase):
             f'/profile/{PostURLTests.user_author.username}/': HTTPStatus.OK,
             f'/posts/{PostURLTests.post.id}/': HTTPStatus.OK,
             '/create/': HTTPStatus.OK,
+            '/follow/': HTTPStatus.OK,
             '/unexisting_page': HTTPStatus.NOT_FOUND
         }
         for address, code in status_pages_direct.items():
@@ -70,6 +82,12 @@ class PostURLTests(TestCase):
         status_pages_redirect = {
             f'/posts/{PostURLTests.post.id}/edit/':
             f'/posts/{PostURLTests.post.id}/',
+            f'/posts/{PostURLTests.post.id}/comment/':
+            f'/posts/{PostURLTests.post.id}/',
+            f'/profile/{PostURLTests.user_author.username}/follow/':
+            f'/profile/{PostURLTests.user_author.username}/',
+            f'/profile/{PostURLTests.user_author.username}/unfollow/':
+            f'/profile/{PostURLTests.user_author.username}/',
         }
         for address, redirect_address in status_pages_redirect.items():
             with self.subTest(address=address):
@@ -100,6 +118,7 @@ class PostURLTests(TestCase):
             f'/posts/{PostURLTests.post.id}/': 'posts/post_detail.html',
             f'/posts/{PostURLTests.post.id}/edit/': 'posts/create_post.html',
             '/create/': 'posts/create_post.html',
+            '/follow/': 'posts/follow_index.html',
         }
         for address, template in templates_url_names.items():
             with self.subTest(address=address):
