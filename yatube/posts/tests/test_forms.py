@@ -131,8 +131,8 @@ class PostCreateFormTests(TestCase):
         self.assertEqual(post_edit.group.title, 'Тестовая группа')
         self.assertEqual(post_edit.author.username, 'ioan')
         self.assertEqual(
-            post_edit.pub_date.isocalendar(),
-            date.today().isocalendar()
+            post_edit.pub_date.date(),
+            date.today()
         )
         self.assertEqual(post_edit.image, 'posts/small_new.gif')
 
@@ -171,6 +171,6 @@ class CommentCreateFormTests(TestCase):
         self.assertEqual(new_comment.post.id, CommentCreateFormTests.post.id)
         self.assertEqual(new_comment.author.username, 'pit')
         self.assertEqual(
-            new_comment.created.isocalendar(),
-            date.today().isocalendar()
+            new_comment.created.date(),
+            date.today()
         )

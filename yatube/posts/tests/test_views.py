@@ -96,17 +96,16 @@ class PostPagesTests(TestCase):
             task_pub_date_0: date.today().isocalendar(),
             task_image_0: 'posts/small.gif'
         }
-        return(post_attr)
+        for attr_get, expected_attr in post_attr.items():
+            with self.subTest(attr_get=attr_get):
+                self.assertEqual(attr_get, expected_attr)
 
     def test_index_correct_context(self):
         response = self.authorized_author_client.get(reverse('posts:index'))
         task_title = response.context['title']
         self.assertEqual(task_title, 'Это главная страници проекта Yatube')
         first_object = response.context['page_obj'][0]
-        post_attr = self.check_post_attributes(post=first_object)
-        for attr_get, expected_attr in post_attr.items():
-            with self.subTest(attr_get=attr_get):
-                self.assertEqual(attr_get, expected_attr)
+        self.check_post_attributes(post=first_object)
 
     def test_group_list_correct_context(self):
         response = self.authorized_author_client.get(
@@ -116,10 +115,7 @@ class PostPagesTests(TestCase):
         first_object = response.context['page_obj'][0]
         self.assertEqual(task_group.title, PostPagesTests.group.title)
         self.assertEqual(task_group.description, 'Текстовое описание')
-        post_attr = self.check_post_attributes(post=first_object)
-        for attr_get, expected_attr in post_attr.items():
-            with self.subTest(attr_get=attr_get):
-                self.assertEqual(attr_get, expected_attr)
+        self.check_post_attributes(post=first_object)
 
     def test_profile_correct_context(self):
         response = self.authorized_author_client.get(
@@ -130,10 +126,7 @@ class PostPagesTests(TestCase):
         first_object = response.context['page_obj'][0]
         self.assertEqual(task_author.get_full_name(), 'Иван Иванов')
         self.assertEqual(task_post_count, 1)
-        post_attr = self.check_post_attributes(post=first_object)
-        for attr_get, expected_attr in post_attr.items():
-            with self.subTest(attr_get=attr_get):
-                self.assertEqual(attr_get, expected_attr)
+        self.check_post_attributes(post=first_object)
 
     def test_post_detail_correct_context(self):
         response = self.authorized_author_client.get(
@@ -145,10 +138,7 @@ class PostPagesTests(TestCase):
         post = response.context['post']
         self.assertEqual(task_post_count, 1)
         self.assertEqual(post.author.get_full_name(), 'Иван Иванов')
-        post_attr = self.check_post_attributes(post=post)
-        for attr_get, expected_attr in post_attr.items():
-            with self.subTest(attr_get=attr_get):
-                self.assertEqual(attr_get, expected_attr)
+        self.check_post_attributes(post=post)
 
     def test_post_create_correct_context(self):
         response = self.authorized_author_client.get(

@@ -27,6 +27,10 @@ class Group(models.Model):
     def __str__(self):
         return self.title[:15]
 
+    class Meta:
+        verbose_name = 'Группа'
+        verbose_name_plural = 'Группы'
+
 
 class Post(models.Model):
     text = models.TextField(
@@ -62,6 +66,8 @@ class Post(models.Model):
     )
 
     class Meta:
+        verbose_name = 'Сообщение'
+        verbose_name_plural = 'Сообщения'
         ordering = ('-pub_date',)
 
     def __str__(self):
@@ -97,6 +103,10 @@ class Comment(models.Model):
     def __str__(self):
         return self.text[:15]
 
+    class Meta:
+        verbose_name = 'Комментарий'
+        verbose_name_plural = 'Комментарии'
+
 
 class Follow(models.Model):
     user = models.ForeignKey(
@@ -118,9 +128,11 @@ class Follow(models.Model):
         return f'{self.user} подписан на {self.author}'
 
     class Meta:
-        constraints = [
+        verbose_name = 'Подписка'
+        verbose_name_plural = 'Подписки'
+        constraints = (
             models.UniqueConstraint(
                 fields=('user', 'author'),
                 name='unique_pair'
             ),
-        ]
+        )

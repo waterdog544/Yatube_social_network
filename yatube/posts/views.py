@@ -45,7 +45,7 @@ def profile(request, username):
     if request.user.username:
         following = Follow.objects.filter(
             user=request.user,
-            author=User.objects.get(username=username)
+            author=user_object
         ).exists()
     context = {
         'page_obj': page_obj,
@@ -88,12 +88,12 @@ def post_create(request):
 
 @login_required
 def post_edit(request, post_id):
+    template = 'posts/create_post.html'
     post = get_object_or_404(Post, pk=post_id)
     if post.author != request.user:
         return redirect('posts:post_detail', post_id=post.id)
     if request.method != 'POST':
         form = PostForm(instance=post)
-        template = 'posts/create_post.html'
         return render(request, template, {
             'form': form,
             'is_edit': True,
@@ -107,7 +107,6 @@ def post_edit(request, post_id):
     if form.is_valid():
         form.save()
         return redirect('posts:post_detail', post_id=post.id)
-    template = 'posts/create_post.html'
     return render(request, template, {
         'form': form,
         'is_edit': True,
@@ -148,19 +147,18 @@ def profile_follow(request, username):
     if request.user.username != username:
         Follow.objects.get_or_create(
             user=request.user,
-            author=User.objects.get(username=username)
+            author=get_object_or_404(User, username=username)
         )
     return redirect('posts:profile', username=username)
 
 
 @login_required
 def profile_unfollow(request, username):
-    if Follow.objects.filter(
+    author = get_object_or_404(User, username=username)
+    follower = Follow.objects.filter(
         user=request.user,
-        author=User.objects.get(username=username)
-    ).exists():
-        Follow.objects.filter(
-            user=request.user,
-            author=User.objects.get(username=username)
-        ).delete()
+        author=author
+    )
+    if follower.exists():
+        follower.delete()
     return redirect('posts:profile', username=username)
