@@ -8,9 +8,11 @@ class AboutAuthorView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['author_title'] = 'Об авторе проекта'
-        context['author_head'] = 'Привет, я автор'
-        context['author_text'] = ('Шванов Андрей Юрьевич. Занимаюсь изучением '
-                                  'программирования.')
+        context['author_head'] = 'Об авторе проекта'
+        context['author_text'] = ('Привет. Я - Шванов Андрей. Занимаюсь '
+                                  'изучением программирования на языке '
+                                  'Python. Разрабатываю backend '
+                                  'сайтов с использованием Django.')
         return context
 
 

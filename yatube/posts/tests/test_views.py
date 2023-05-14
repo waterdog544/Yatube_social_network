@@ -382,6 +382,11 @@ class CacheTests(TestCase):
         cls.user_author = User.objects.create_user(
             username='pit',
         )
+        for i in range(100, 113):
+            Post.objects.create(
+                text=f'Тест {i}',
+                author=CacheTests.user_author,
+            )
         cls.post = Post.objects.create(
             author=cls.user_author,
             text='Тестовый пост',
@@ -392,26 +397,58 @@ class CacheTests(TestCase):
         self.authorized_author_client.force_login(CacheTests.user_author)
 
     def test_index_cache(self):
-        self.authorized_author_client.get(reverse('posts:index'))
-        key = make_template_fragment_key('index_page')
+
+        response_page1 = self.authorized_author_client.get(
+            reverse('posts:index')
+        )
+        response_page2 = self.authorized_author_client.get(
+            reverse('posts:index'),
+            {'page': 2}
+        )
+        self.assertNotEqual(response_page1.content, response_page2.content)
+        self.assertIsNotNone(response_page1)
+        key = make_template_fragment_key(
+            'index_page',
+            [response_page1.context['page_obj'].number, ]
+        )
         cach_page = cache.get(key)
+        self.assertIsNotNone(cach_page)
         CacheTests.post.delete()
         Post.objects.create(
             author=CacheTests.user_author,
             text='Тестовый пост2',
         )
-        self.authorized_author_client.get(reverse('posts:index'))
-        key_after_del = make_template_fragment_key('index_page')
+        response_befor_clear_cache = self.authorized_author_client.get(
+            reverse('posts:index')
+        )
+        self.assertIsNotNone(response_befor_clear_cache)
+        key_after_del = make_template_fragment_key(
+            'index_page',
+            [response_befor_clear_cache.context['page_obj'].number, ]
+        )
         cach_page_after_del = cache.get(key_after_del)
-        self.assertIsNotNone(cach_page)
         self.assertIsNotNone(cach_page_after_del)
         self.assertEqual(cach_page, cach_page_after_del)
+        self.assertEqual(
+            response_befor_clear_cache.content,
+            response_page1.content
+        )
         cache.clear()
-        self.authorized_author_client.get(reverse('posts:index'))
-        key_after_clear = make_template_fragment_key('index_page')
+        response_after_clear_cache = self.authorized_author_client.get(
+            reverse('posts:index')
+        )
+        self.assertIsNotNone(response_after_clear_cache)
+        key_after_clear = make_template_fragment_key(
+            'index_page',
+            [response_after_clear_cache.context['page_obj'].number, ]
+        )
         cach_page_after_clear = cache.get(key_after_clear)
         self.assertIsNotNone(cach_page_after_clear)
         self.assertNotEqual(cach_page, cach_page_after_clear)
+        self.assertNotEqual(
+            response_after_clear_cache.content,
+            response_page1.content
+        )
 
 
 class FollowTests(TestCase):
