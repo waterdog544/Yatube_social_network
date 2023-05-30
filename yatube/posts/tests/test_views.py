@@ -103,7 +103,7 @@ class PostPagesTests(TestCase):
     def test_index_correct_context(self):
         response = self.authorized_author_client.get(reverse('posts:index'))
         task_title = response.context['title']
-        self.assertEqual(task_title, 'Это главная страници проекта Yatube')
+        self.assertEqual(task_title, 'Это главная страница проекта Yatube')
         first_object = response.context['page_obj'][0]
         self.check_post_attributes(post=first_object)
 

@@ -13,7 +13,7 @@ def index(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     context = {
-        'title': 'Это главная страници проекта Yatube',
+        'title': 'Это главная страница проекта Yatube',
         'page_obj': page_obj,
     }
     return render(request, template, context)
