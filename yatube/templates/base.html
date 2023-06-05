@@ -11,15 +11,24 @@
     <meta name="msapplication-TileColor" content="#000">
     <meta name="theme-color" content="#ffffff">
     <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <style>
+      .custom-toggler .navbar-toggler-icon {
+        background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba(0,0,255, 0.5)' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 8h24M4 16h24M4 24h24'/%3E%3C/svg%3E");
+      }
+      
+      .custom-toggler.navbar-toggler {
+        border-color: rgb(0,0,255);
+      } 
+    </style>
     <title>
 	    {% block title %}
 	      Заголовок
 	    {% endblock %}
 	  </title>
-  </head>
+    </head>
   <body>
     <header>
-      {% include 'includes/header.html' %}	  
+      {% include 'includes/header.html' %}      
     </header>
     <main>
       <div class="container py-5">
@@ -31,5 +40,6 @@
     <footer class="border-top text-center py-3">
       {% include 'includes/footer.html' %}    
     </footer>
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
   </body>
 </html>
